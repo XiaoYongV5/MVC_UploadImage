@@ -1,0 +1,251 @@
+﻿@model MVC图片上传.Models.ImageModel
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>Index</title>
+    <link href="~/bootstrap/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="~/Content/bootstrap-table/bootstrap-table.css" rel="stylesheet" />
+    <link href="~/Content/style2.css" rel="stylesheet" />
+    @*1、Jquery组件引用*@
+    <script type="text/javascript" src="~/Script/jquery-1.10.2.js"></script>
+
+    @*2、bootstrap组件引用*@
+    <script type="text/javascript" src="~/Content/bootstrap/bootstrap.js"></script>
+    <link href="~/Content/bootstrap/bootstrap.css" rel="stylesheet" />
+    @*3、bootstrap table组件以及中文包的引用*@
+    <script type="text/javascript" src="~/Content/bootstrap-table/bootstrap-table.js"></script>
+
+    <script type="text/javascript" src="~/Content/bootstrap-table/locale/bootstrap-table-zh-CN.js"></script>
+    <script src="~/bootstrap/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="~/layer/layer.js"></script>
+    <script type="text/javascript" src="~/bootstrap/js/fileinput.js?=1"></script>
+    <script type="text/javascript" src="~/bootstrap/js/zh.js"></script>
+    <script type="text/javascript" src="~/bootstrap/js/bootstrap.min.js"></script>
+</head>
+<body>
+    <form enctype="multipart/form-data" id="form" action="/Home/UpLoadImage" method="post">
+        <div class="full_w" style="margin-top: 100px; margin-left: 30%; width: 800px;">
+            <div class="h_title">&nbsp;<b>用户上传的文件</b></div>
+            <div class="entry">
+                步骤： <span class="red" style="color: red">(上传资料必须是bmp,gif,jpg,jpeg,png类型,不能大于2M)</span>
+                <ol>
+                    <li>先按『选择』键选择上传文件；</li>
+                    <li>按『上传』键上传文件；</li>
+                    <li>按『保存』键保存文件；</li>
+                </ol>
+            </div>
+
+            <div class="entry">
+                <div class="sep"></div>
+            </div>
+
+            <div class="entry">
+                <div id="wrapper" style="text-align: center; position: relative;">
+                    <div class="form-group">
+                        <input id="uploadfile" type="file" value="浏览..." class="file" name="FileName" data-upload-url="#" style="position: absolute; top: 0; right: 0; min-width: 100%; min-height: 100%; text-align: right; opacity: 0; background: none repeat scroll 0 0 transparent; cursor: inherit; display: block;" />
+
+                    </div>
+                </div>
+            </div>
+
+            <table>
+                <tbody>
+                    <tr>
+                        <td class="entry">身份证正面</td>
+                        <td>
+
+                            @if (Model == null || Model.ID == null || string.IsNullOrEmpty(Model.IDProofFront))
+                            {
+                                <a href="javascript:void(0);" target="_blank" class="winView">
+                                    <img style="border: none; width: 150px; height: 100px" src="/img/noupload.png" />
+                                </a>
+                            }
+                            else
+                            {
+                                <a href="@(ViewBag.pathSrc + Model.IDProofFront)"  target="_blank"class="winView" >
+                                    <img style="border: none; width: 150px; height: 100px" src="@(ViewBag.pathSrc + Model.IDProofFront)" />
+                                </a>
+                            }
+                            @Html.HiddenFor(m => m.IDProofFront)
+                            @Html.HiddenFor(m => m.ID)
+                        </td>
+                        <td>
+                            <a href="javascript:void(0)" class="easyui-linkbutton btnFinleUP" data-op="1" data-type="image">上传</a>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="entry">身份证背面</td>
+                        <span id="lblinfosi" style="color: Green"></span>
+                        <td>
+                            @if (Model == null || Model.ID == null || string.IsNullOrEmpty(Model.IDProofBack))
+                            {
+                                <a href="javascript:void(0);" target="_blank" class="winView">
+                                    <img style="border: none; width: 150px; height: 100px" src="/img/noupload.png" />
+                                </a>
+                            }
+                            else
+                            {
+                                <a href="@(ViewBag.pathSrc + Model.IDProofBack)" target="_blank" class="winView" >
+                                    <img style="border: none; width: 150px; height: 100px" src="@(ViewBag.pathSrc + Model.IDProofBack)" />
+                                </a>
+                            }
+                            @Html.HiddenFor(m => m.IDProofBack)
+                        </td>
+                        <td>
+                            <a href="javascript:void(0)" class="easyui-linkbutton btnFinleUP" data-op="2" data-type="image">上传</a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="entry">
+                <button class="button" name="btnSaveAll" value="保存" id="btnSaveAll" style="height: 30px; width: 80px; text-align: center;">保存</button>
+                <a href="/Home/Index" style="height: 30px; text-align: center; width: 80px; background: #ffffff; border: 1px solid #DCDCDC; border-radius: 2px; color: #444444; cursor: pointer; display: inline-block; font: 700 11px Tahoma, Arial, sans-serif; margin-right: 10px; padding: 7px 12px 7px 12px; position: relative; text-decoration: none; text-shadow: 0px 1px 0px #FFFFFF;">返回</a>
+
+            </div>
+        </div>
+    </form>
+</body>
+</html>
+<script type="text/javascript">
+    var accountData = { IsGLGF: false, FileOpt: 0, PathSrc: '@ViewBag.pathSrc', PId: '@ViewBag.Id' };
+
+    $(function () {
+        initFileUpload();
+        //保存数据
+        $("#btnSaveAll").click(function () {
+
+            if (showName.length == 0) {
+                layer.msg('请选择要上传的文件', function () { });
+                return false;
+            }
+            submitForms();
+        });
+    })
+    function submitForms() {
+        $('#form').form('submit', {
+            onSubmit: function () {
+                return true;
+            },
+            success: function (data) {
+                //var res = eval('(' + data + ')');
+
+                console.log(data);
+                if (res.Result == 500) {
+                    layer.msg('上传出错，请稍后再试', function () { });
+                    return false;
+                }
+                if (res.Result == "0") {
+                    layer.msg('' + res.MSG, function () { });
+                    return false;
+                } else if (res.Result == "1") {
+                    location.reload();
+                    windows.location.href = "/Edit/Index?Id=" + accountData.PId;
+                    layer.msg('' + res.MSG);
+                    return;
+                }
+            }
+        });
+    }
+    //上传控件初始化
+    function initFileUpload() {
+        $("#uploadfile").fileinput({
+            //uploadExtraData: { kvId: '10' },
+            language: 'zh', //设置语言  
+            showUpload: false, //是否显示上传按钮
+            uploadAsync: true, //默认异步上传
+            showRemove: false,
+            autoReplace: true,
+            maxFileCount: 1,
+            maxFileSize: 10240,
+            dropZoneTitle: '拖拽文件到这里 &hellip;<br>仅限.pdf, .jpg, .jpeg, .gif',
+            enctype: 'multipart/form-data',
+            fileActionSettings: { uploadClass: "hidden", zoomClass: "hidden", removeClass: "hidden" },
+            allowedFileExtensions: ['jpg', 'png', 'gif', 'pdf'],//接收的文件后缀
+            msgFilesTooMany: "选择上传的文件数量({n}) 超过允许的最大数值{m}！",
+            uploadUrl: "/FileUpload/FileUpLoad", //上传的地址
+
+        }).on("filebatchselected", function (event, files) {
+            $(".file-preview-success").remove();
+        })
+
+        $("#uploadfile").on("fileuploaded", function (event, data, previewId, index) {
+
+            console.log("accountData 初始化后 FileOpt" + accountData);
+            console.log("accountData.FileOpt " + accountData.FileOpt);
+            var obj = data.response;
+            if (obj.Status != 500 && obj.Data != undefined) {
+                var src = accountData.PathSrc + obj.Data.FileName;
+                showName = obj.Data.FileName;
+                //alert(showName);
+
+                var pId = accountData.PId;
+                var fileObj = undefined;
+                var field = "";
+                var isPdf = false;
+                debugger;
+                if (accountData.FileOpt == 1) {
+                    fileObj = $("#IDProofFront");
+                    field = "IDProofFront";
+                    fileObj.val(obj.Data.FileName);
+                } else if (accountData.FileOpt == 2) {
+                    fileObj = $("#IDProofBack");
+                    field = "IDProofBack";
+                    $("#IDProofBack").val(showName);
+                    fileObj.val(obj.Data.FileName);
+                }
+                fileObj.prev().attr("href", src);
+                src = isPdf == true ? "/Content/images/PDF.png" : src;
+                fileObj.prev().find("img").attr("src", src);
+            } else {
+                console.error(obj.Data);
+            }
+        });
+
+        $('#uploadfile').on('filesuccessremove', function (event, id) {
+
+        });
+        $('#uploadfile').on('fileerror', function (event, data, msg) {
+
+        });
+
+        //上传
+        $(".btnFinleUP").click(function () {
+            var fileName = $("#uploadfile").val();
+            var obj = document.getElementById("uploadfile");
+            var type = $(this).attr("data-op");
+            //alert("当前点击的type是：" + type);
+            var fileType = $(this).attr("data-type");
+            var files = $("#uploadfile").fileinput("getFileStack");
+
+            if (files.length == 0) {
+                layer.msg('请选择要上传的文件', function () { });
+                return;
+            }
+            var array = fileType.split(",");
+            var selectType = files[0].type.toLowerCase();
+            var falg = false;
+            for (var i = 0; i < array.length; i++) {
+                if (selectType.indexOf(array[i]) == -1) {
+                    falg = false;
+                } else
+                    falg = true;
+                if (falg)
+                    break;
+            }
+            if (!falg) {
+                layer.msg('只能选择' + fileType + ' 类型的文件', function () { });
+                return;
+            }
+            accountData.FileOpt = type;
+            $("#uploadfile").fileinput("upload");
+
+        });
+    }
+</script>
